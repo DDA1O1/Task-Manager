@@ -1,4 +1,31 @@
 # Task Manager App Structure
+# Task Manager
+
+A React-based task management application with features like task creation, filtering, and history tracking.
+
+## Getting Started
+
+### Prerequisites
+- Node.js (v14 or higher)
+- npm (v6 or higher)
+
+### Installation
+
+1. Clone the repository
+```bash
+git clone https://github.com/DDA1O1/Task-Manager.git
+cd Task-Manager
+```
+
+2. Install dependencies
+```bash
+npm install
+```
+
+3. Start development server
+```bash
+npm run dev
+```
 
 ## Directory Structure
 ```
