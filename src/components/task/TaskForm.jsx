@@ -1,28 +1,16 @@
 import { useState } from 'react'
+import { useTasks } from '@/context/TaskContext'
 
-export default function TaskForm({ tasks, setTasks, taskHistory, setTaskHistory }) {
+export default function TaskForm() {
   const [newTask, setNewTask] = useState('')
   const [newPriority, setNewPriority] = useState('low')
+  const { addTask } = useTasks()
 
   const handleSubmit = (e) => {
     e.preventDefault()
     if (!newTask.trim()) return
     
-    const taskId = Date.now()
-    setTasks([...tasks, {
-      id: taskId,
-      text: newTask,
-      completed: false,
-      priority: newPriority
-    }])
-
-    setTaskHistory([...taskHistory, {
-      taskId,
-      type: 'ADD',
-      newValue: { text: newTask, priority: newPriority },
-      timestamp: new Date().toISOString()
-    }])
-
+    addTask(newTask, newPriority)
     setNewTask('')
   }
 

@@ -1,15 +1,16 @@
 /**
  * TaskHistory Component - Displays historical changes for a specific task
- * @param {Array} taskHistory - Array of all task history records
  * @param {string} taskId - ID of the current task to show history for
  */
-export default function TaskHistory({ taskHistory, taskId }) {
-  // Filter records for current task and reverse to show newest first
+import { useTasks } from '@/context/TaskContext'
+
+export default function TaskHistory() {
+  const { taskHistory, selectedTaskId } = useTasks()
+  
+  // Filter records for selected task
   const history = taskHistory
-    .filter(record => record.taskId === taskId)
-    .reverse() // Reverse to show newest first. Chronological order.
-    
-  console.log('Task History:', history)
+    .filter(record => record.taskId === selectedTaskId)
+    .reverse()
 
   return (
     <div className="mt-2 ml-8 p-3 bg-yellow-700/50 rounded-lg">

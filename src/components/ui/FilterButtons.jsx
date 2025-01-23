@@ -1,4 +1,7 @@
-export default function FilterButtons({ filter, setFilter }) {
+import { useTasks } from '@/context/TaskContext'
+
+export default function FilterButtons() {
+  const { filter, setFilter } = useTasks()
   const filters = ['all', 'active', 'completed']
 
   return (

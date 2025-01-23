@@ -1,6 +1,9 @@
 import { FaSearch, FaTimes } from 'react-icons/fa'
+import { useTasks } from '@/context/TaskContext'
 
-export default function SearchBar({ searchTerm, setSearchTerm }) {
+export default function SearchBar() {
+  const { searchTerm, setSearchTerm } = useTasks()
+
   return (
     <div className="relative mb-6">
       <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
