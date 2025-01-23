@@ -1,8 +1,4 @@
-import { useTasks } from '@/context/TaskContext'
-
-export default function Statistics() {
-  const { tasks } = useTasks()
-  
+export default function Statistics({ tasks }) {
   const completionRate = tasks.length 
     ? Math.round((tasks.filter(t => t.completed).length / tasks.length) * 100)
     : 0

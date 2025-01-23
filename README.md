@@ -1,112 +1,233 @@
+# Task Manager App Structure
+# Task Manager
 
+A React-based task management application with features like task creation, filtering, and history tracking.
 
-App -> TaskForm -> TaskItem -> TaskHistory
-        ↓
-     TaskList
-        ↓
-    Statistics
+## Getting Started
 
-## State Management with Context API
+### Prerequisites
+- Node.js (v14 or higher)
+- npm (v6 or higher)
 
-### Why Context API?
+### Installation
 
-Before implementing Context API, our app faced several challenges:
-1. **Prop Drilling**: State was passed through multiple component layers
-2. **Complex State Management**: Tasks and history state were managed separately
-3. **Scattered Business Logic**: State operations were spread across components
+1. Clone the repository
+```bash
+git clone https://github.com/DDA1O1/Task-Manager.git
+cd Task-Manager
+```
 
-### Implementation
+2. Install dependencies
+```bash
+npm install
+```
 
-#### 1. Task Context Structure
+3. Start development server
+```bash
+npm run dev
+```
+
+## Directory Structure
+```
+src/
+├── App.jsx                    # Main container
+├── components/
+│   ├── task/                 # Task-related components
+│   ├── ui/                   # UI components
+│   └── shared/              # Reusable components
+├── hooks/                    # Custom hooks
+└── utils/                    # Utility functions
+```
+
+## Core Features
+- Task management (create, edit, delete)
+- Priority levels (low, medium, high)
+- Task filtering and search
+- Task history tracking
+- Local storage persistence
+
+## Data Flow & State Management
+
+### Initial Data Loading
+When the app mounts, the `useLocalStorage` hook:
+1. Fetches stored data from localStorage for:
+   - `tasks` - Returns stored tasks or empty array `[]`
+   - `taskHistory` - Returns stored history or empty array `[]`
+2. Initializes state with this data before first render
+
+### State Management
+The app uses multiple state hooks:
+- `tasks` - Main task data (persisted in localStorage)
+- `taskHistory` - Task change history (persisted in localStorage) 
+- `filter` - Current filter selection ('all'/'active'/'completed')
+- `searchTerm` - Current search input
+
+### Re-render Behavior
+App.jsx re-renders when:
+- State hooks update (`tasks`, `taskHistory`, `filter`, `searchTerm`)
+- Child components trigger state updates via:
+  - TaskForm: Adding new tasks
+  - TaskList: Editing/deleting tasks
+  - FilterButtons: Changing filter
+  - SearchBar: Updating search term
+
+## Component Logic
+
+### TaskForm Logic
+1. **State Management**
+   ```jsx
+   const [newTask, setNewTask] = useState('')
+   const [newPriority, setNewPriority] = useState('low')
+   ```
+
+2. **Task Creation Flow**
+   - Validate input (prevent empty tasks)
+   - Generate unique ID using timestamp
+   - Create task object
+   - Update task history
+   - Reset form
+
+### TaskList Logic
+1. **State Update Pattern**
+   ```jsx
+   // Correct: Using prevTasks for atomic updates
+   setTasks(prevTasks => prevTasks.map(...))
+   ```
+
+2. **Core Operations**
+   - Toggle completion
+   - Delete task
+   - Update task
+   - Maintain state consistency using prevTasks
+
+### TaskItem Logic
+1. **Edit Mode**
+   ```jsx
+   const [isEditing, setIsEditing] = useState(false)
+   const [editText, setEditText] = useState(task.text)
+   const [editPriority, setEditPriority] = useState(task.priority)
+   ```
+   - Temporary state for edits
+   - Validation before save
+   - History tracking for changes
+
+2. **History Display**
+   ```jsx
+   const [showHistory, setShowHistory] = useState(false)
+   ```
+   - On-demand history loading
+   - Task-specific filtering
+
+### Task History Implementation
+1. **Data Structure**
+   ```jsx
+   {
+     taskId: string,
+     timestamp: ISOString,
+     type: 'ADD' | 'EDIT',
+     oldValue?: { text: string, priority: string },
+     newValue: { text: string, priority: string }
+   }
+   ```
+
+2. **Display Logic**
+   - Filter by taskId
+   - Reverse chronological order
+   - Different messages for ADD/EDIT
+
+## Performance Optimization
+
+### Task Filtering
 ```jsx
-TaskContext/
-├── TaskProvider     # Manages global state
-├── useTasks        # Custom hook for consuming context
-└── State           # Manages:
-                    # - tasks
-                    # - taskHistory
-                    # - task operations
+const filteredTasks = useMemo(() => 
+  tasks.filter(task => {...}), 
+  [tasks, filter, searchTerm]
+);
 ```
+- Prevents unnecessary recalculations
+- Only updates when dependencies change
+- Improves performance with large lists
 
-#### 2. Data Flow
-```
-TaskProvider
-    │
-    ├── Tasks State
-    │   └── [tasks, setTasks]
-    │
-    ├── History State
-    │   └── [taskHistory, setTaskHistory]
-    │
-    └── Operations
-        ├── addTask()
-        ├── updateTask()
-        ├── deleteTask()
-        └── toggleTask()
-```
+### State Updates
+- Use functional updates with prevState
+- Atomic operations for consistency
+- Prevent race conditions
 
-#### 3. Before vs After Comparison
+### Component Updates
+- Conditional rendering for history
+- Memoized filtering
+- Efficient state management
 
-**Before:**
+### TaskList Component
+Manages the display and manipulation of tasks.
+
+#### Core Functions
+1. **Toggle Task Completion**
+   ```jsx
+   const toggleTask = (id) => {
+     setTasks(prevTasks => prevTasks.map(task => 
+       task.id === id ? {...task, completed: !task.completed} : task
+     ))
+   }
+   ```
+
+2. **Delete Task**
+   ```jsx
+   const deleteTask = (id) => {
+     setTasks(prevTasks => prevTasks.filter(task => task.id !== id))
+   }
+   ```
+
+3. **Update Task**
+   ```jsx
+   const updateTask = (id, newText, newPriority) => {
+     setTasks(prevTasks => prevTasks.map(task =>
+       task.id === id ? {...task, text: newText, priority: newPriority} : task
+     ))
+   }
+   ```
+
+#### Data Flow
+1. **Receiving Filtered Tasks**
+   - Gets pre-filtered tasks based on search and filter criteria
+   - Filters are applied in parent component (App.jsx)
+
+2. **Task Rendering**
+   ```jsx
+   tasks.map(task => (
+     <TaskItem
+       key={task.id}
+       task={task}
+       onToggle={toggleTask}
+       onDelete={deleteTask}
+       onUpdate={updateTask}
+       taskHistory={taskHistory}
+       setTaskHistory={setTaskHistory}
+     />
+   ))
+   ```
+
+#### Props
 ```jsx
-App
-├── tasks, taskHistory state
-├── TaskForm (props: tasks, setTasks, taskHistory, setTaskHistory)
-├── TaskList (props: tasks, setTasks, taskHistory, setTaskHistory)
-│   └── TaskItem (props: tasks, setTasks, taskHistory, setTaskHistory)
-└── Statistics (props: tasks)
-```
-
-**After:**
-```jsx
-TaskProvider
-└── App
-    ├── TaskForm (no props needed)
-    ├── TaskList (no props needed)
-    │   └── TaskItem (no props needed)
-    └── Statistics (no props needed)
-```
-
-### Usage Example
-
-```jsx
-// Using the context in components
-function TaskForm() {
-  const { addTask } = useTasks();
-  // Direct access to context without props
+{
+  tasks: Array,          // Filtered tasks array
+  setTasks: Function,    // Tasks state updater
+  taskHistory: Array,    // History records
+  setTaskHistory: Function  // History state updater
 }
-
-function Statistics() {
-  const { tasks } = useTasks();
-  // Direct access to tasks without props
-}
 ```
 
-### Benefits
+#### Performance Considerations
+- Uses unique `key` prop for efficient React reconciliation
+- Handles state updates immutably
+- Delegates individual task rendering to TaskItem component
 
-1. **Simplified Component Tree**
-   - Eliminated prop drilling
-   - Cleaner component interfaces
-   - Easier to add new components
+#### TaskItem Integration
+- Each task is rendered as a TaskItem component
+- Passes necessary callback functions for task manipulation
+- Maintains history through parent state
 
-2. **Centralized State Management**
-   - Single source of truth
-   - Predictable state updates
-   - Easier debugging
-
-3. **Improved Maintainability**
-   - Business logic centralized in context
-   - Reduced code duplication
-   - Better separation of concerns
-
-### Performance Considerations
-
-1. **Context Splitting**
-   - Separate contexts for tasks and history
-   - Prevents unnecessary re-renders
-   - Better performance optimization
-
-2. **Memoization**
-   - Use useMemo for expensive calculations
-   - Implement React.memo for pure components
-   - Optimize context value updates
+#### Error Handling
+- Safely handles empty task arrays
+- Preserves task list integrity during updates
+- Prevents duplicate IDs through timestamp-based generation
