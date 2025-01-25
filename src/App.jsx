@@ -5,6 +5,7 @@ import TaskForm from '@components/task/TaskForm'
 import TaskList from '@components/task/TaskList'
 import { useState, useMemo } from 'react'
 import SearchBar from '@components/ui/SearchBar'
+import Smiley from '@components/Smiley'
 
 export default function App() {
   // Store tasks in localStorage to persist data after page refresh
@@ -24,6 +25,7 @@ export default function App() {
 
   // Memoized filtered tasks
   const filteredTasks = useMemo(() => {
+    console.log('filteredTasks component rendered')
     return tasks.filter(task => {
       if (searchTerm) {
         return task.text.toLowerCase().includes(searchTerm.toLowerCase());
@@ -33,8 +35,10 @@ export default function App() {
     });
   }, [tasks, filter, searchTerm]);  // Only recalculate when these values change
 
+
   return (
     <div className="min-h-screen bg-gray-900 py-8">
+      <Smiley />
       <div className="max-w-2xl mx-auto bg-gray-800 rounded-lg shadow-xl p-6">
         <h1 className="text-3xl font-bold text-gray-100 mb-6">Task Manager</h1>
         
