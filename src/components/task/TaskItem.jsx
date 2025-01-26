@@ -11,6 +11,8 @@ export default function TaskItem({
   taskHistory,    // Array of historical changes for tasks
   setTaskHistory  // Function to update task history
 }) {
+  console.log(`TaskItem rendered - Task ID: ${task.id}`)
+  
   // State management for task editing and history display
   const [isEditing, setIsEditing] = useState(false)    // Controls edit mode
   const [editText, setEditText] = useState(task.text)  // Temporary state for text editing
